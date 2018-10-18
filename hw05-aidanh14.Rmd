@@ -1,0 +1,55 @@
+---
+title: "Homework 05: Factor and Figure Management"
+author: "Aidan Hughes"
+date: "October 17, 2018"
+output: 
+  github_document:
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Overview
+
+Taken from the [homework HTML file](http://stat545.com/Classroom/assignments/hw05/hw05.html), here are the goals for this assignment:
+
+
+- Reorder a factor in a principled way based on the data and demonstrate the effect in arranged data and in figures.
+
+- Write some data to file and load it back into R.
+
+- Improve a figure (or make one from scratch), using new knowledge, e.g., control the color scheme, use factor levels, smoother mechanics.
+
+- Make a plotly visual.
+
+- Implement visualization design principles.
+
+# Part 1: Factor Management
+
+First things first, load all of our packages.
+
+```{r packages}
+suppressPackageStartupMessages(library("gapminder"))
+suppressPackageStartupMessages(library("tidyverse"))
+suppressPackageStartupMessages(library("singer"))
+```
+
+Let's manipulate some factors in gapminder.
+
+```{r}
+gap_2002 <- gapminder %>%
+  select(country) %>%
+  distinct(country) %>%
+  filter(country %in% c("Canada", "Mexico"))
+  
+countries <- gap_2002$country
+
+class(countries)
+nlevels(countries)
+countries
+```
+
+
+
