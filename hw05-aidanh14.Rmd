@@ -34,22 +34,46 @@ First things first, load all of our packages.
 suppressPackageStartupMessages(library("gapminder"))
 suppressPackageStartupMessages(library("tidyverse"))
 suppressPackageStartupMessages(library("singer"))
+suppressPackageStartupMessages(library("scales"))
 ```
 
-Let's manipulate some factors in gapminder.
+Before manipulating the levels of gapminder, let's first check the columns are actually factors and then look at some numbers so we can do a before/after comparison.
 
-```{r}
-gap_2002 <- gapminder %>%
-  select(country) %>%
-  distinct(country) %>%
-  filter(country %in% c("Canada", "Mexico"))
+```{r before dropping}
+is.factor(gapminder$continent)
+
+nlevels(gapminder$continent)
+levels(gapminder$continent)
+nrow(gapminder)
+```
+
+```{r after dropped}
+no_Oceania <- gapminder %>%
+  filter(continent != "Oceania") %>%
+  droplevels()
   
-countries <- gap_2002$country
+nlevels(no_Oceania$continent)
+levels(no_Oceania$continent)
+nrow(no_Oceania)
+```
 
-class(countries)
-nlevels(countries)
-countries
+We can plot the before and after data frames to see the difference. 
+
+```{r Oceania not dropped}
+gapminder %>%
+  mutate(continent = fct_reorder(continent, gdpPercap, .fun = min)) %>%
+  ggplot(aes(continent, gdpPercap)) +
+  geom_jitter(alpha = 0.3) +
+  scale_y_log10(labels=comma_format())
 ```
 
 
+```{r Oceania dropped}
+no_Oceania %>%
+  mutate(continent = fct_reorder(continent, gdpPercap, .fun = min)) %>%
+  ggplot(aes(continent, gdpPercap)) +
+  geom_jitter(alpha = 0.3) +
+  scale_y_log10(labels=comma_format())
+```
 
+Clearly, the GDP per Capita no longer plots Oceania as it has been dropped.
