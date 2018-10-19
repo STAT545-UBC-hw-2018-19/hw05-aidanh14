@@ -37,6 +37,8 @@ suppressPackageStartupMessages(library("singer"))
 suppressPackageStartupMessages(library("scales"))
 ```
 
+## Elaborating Gapminder Dataset
+
 Before manipulating the levels of gapminder, let's first check the columns are actually factors and then look at some numbers so we can do a before/after comparison.
 
 ```{r before dropping}
@@ -78,20 +80,84 @@ no_Oceania %>%
   mutate(continent = fct_reorder(continent, gdpPercap, .fun = min)) %>%
   ggplot(aes(continent, gdpPercap)) +
   geom_jitter(colour = "orange", alpha = 0.3) +
-  scale_y_log10(labels=comma_format())
+  scale_y_log10(labels=comma_format()) + 
+  labs(y = "GDP Per Capita", x = "Continent", title = "GDP Per Capita of Continents After Dropping Oceania") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_minimal()
 ```
 
 Clearly, the GDP per Capita no longer plots Oceania as it has been dropped.
 
 
-We can try `arrange()` as well with gdpPercap, which would be the same as using `fct_reorder` with the function set as `mean`.
+We can try `arrange()` as well with gdpPercap, which would be the same as using `fct_reorder` with the default`mean` function.
 
-```{r}
+```{r no Oceania plot}
 no_Oceania %>%
   arrange(gdpPercap) %>%
   ggplot(aes(continent, gdpPercap)) +
   geom_jitter(colour = "darkgreen", alpha = 0.3) +
-  scale_y_log10(labels=comma_format())
+  scale_y_log10(labels=comma_format()) + 
+  labs(y = "GDP Per Capita", x = "Continent", title = "GDP Per Capita of Continents Arranged by Mean") +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  theme_minimal()
 
 ```
 
+## Elaborating Singer Dataset
+
+Let's have a quick look at the structure of the `singer_locations` dataset.
+
+```{r singer dataset}
+head(singer_locations)
+nrow(singer_locations)
+```
+
+We can see that none of the columns are currently factors, so let's convert the year column into a factor before dropping any data.
+
+```{r factor year}
+# Using the base R function
+singerFactorYear1 <- singer_locations %>%
+  mutate(year = as.factor(year))
+
+# Using the forcats function
+singerFactorYear2 <- singer_locations %>%
+  mutate(year = factor(year))
+
+tibble("as.factor()" = singerFactorYear1$year,
+       "factor()" = singerFactorYear2$year) %>%
+  head() %>%
+  knitr::kable()
+
+```
+
+
+In this case, the output of the base R factor function and the forcats function are the same, but its alway's good to check in case of surprises.
+
+Now we can move onto dropping the "0" years.
+
+```{r drop 0 years}
+singerFixedYears <- singerFactorYear1 %>%
+  filter(year != 0) %>%
+  mutate(year = fct_drop(year))
+
+nrow(singerFixedYears)
+
+any(levels(singerFixedYears) == 0)
+```
+
+Remembering from before, we originally had 10100 entries in the `singer_locations` dataset, and now the number has decreased. As well, the unused level "0" has been dropped.
+
+Now, let's try rearranging `artist_name` to show which songs had the highest "hotness" score.
+
+```{r}
+singer_locations %>%
+  mutate(artist_name = factor(artist_name)) %>%
+  mutate(artist_name = fct_reorder(artist_name, artist_hotttnesss, .fun = max)) %>%
+  select(artist_name, artist_hotttnesss, year) %>%
+  head() %>%
+  knitr::kable()
+```
+
+Good job, Motion City Sountrack.
+
+# Part 2: File I/O
