@@ -8,6 +8,7 @@ October 17, 2018
     -   [Elaborating Gapminder Dataset](#elaborating-gapminder-dataset)
     -   [Elaborating Singer Dataset](#elaborating-singer-dataset)
 -   [Part 2: File I/O](#part-2-file-io)
+-   [Part 3: Visualization Design](#part-3-visualization-design)
 
 Overview
 ========
@@ -297,11 +298,16 @@ tibble("Before I/O" = beforeIO, "After I/O" = afterIO) %>%
   knitr::kable()
 ```
 
-| Before I/O   | After I/O    |
-|:-------------|:-------------|
-| Zap Pow      | Zap Pow      |
-| Silmarils    | Silmarils    |
-| Hatiras      | Hatiras      |
-| Heidi Montag | Heidi Montag |
-| Astream      | Astream      |
-| Dokken       | Dokken       |
+| Before I/O     | After I/O      |
+|:---------------|:---------------|
+| Brother Beyond | Brother Beyond |
+| Ky-Mani Marley | Ky-Mani Marley |
+| Finntroll      | Finntroll      |
+| Lucky Soul     | Lucky Soul     |
+| Raimundos      | Raimundos      |
+| Kino Oko       | Kino Oko       |
+
+Great, still didn't lose the new ordering.
+
+Part 3: Visualization Design
+============================

@@ -35,6 +35,7 @@ suppressPackageStartupMessages(library("gapminder"))
 suppressPackageStartupMessages(library("tidyverse"))
 suppressPackageStartupMessages(library("singer"))
 suppressPackageStartupMessages(library("scales"))
+suppressPackageStartupMessages(library("ggalt"))
 ```
 
 ## Elaborating Gapminder Dataset
@@ -149,7 +150,7 @@ Remembering from before, we originally had 10100 entries in the `singer_location
 
 Now, let's try rearranging `artist_name` to show which songs had the highest "hotness" score.
 
-```{r}
+```{r reordering}
 # Before reorder
 artistsFactors <- singer_locations %>%
   mutate(artist_name = as_factor(artist_name))
@@ -218,3 +219,19 @@ tibble("Before I/O" = beforeIO, "After I/O" = afterIO) %>%
 Great, still didn't lose the new ordering.
 
 # Part 3: Visualization Design
+
+Let's bring together what we've learned about `scales`, theming and coloring in `ggplot`, and some extra aesthetics I found [online](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html#Scatterplot%20With%20Encircling).
+
+```{r}
+gapminder %>%
+  filter(year == 2002) %>%
+  select(continent, pop, gdpPercap) %>%
+  ggplot(aes(y = pop, x = gdpPercap, colour=continent)) +
+  geom_point() +
+  geom_encircle(size = 2, expand = 0.01) + 
+  scale_y_log10() +
+  scale_x_log10() +
+  theme_light() +
+  labs(x = "GDP Per Capita", y = "Population", title = "GDP Per Capita vs. Population")
+``
+
