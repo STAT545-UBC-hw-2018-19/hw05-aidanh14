@@ -36,6 +36,7 @@ suppressPackageStartupMessages(library("tidyverse"))
 suppressPackageStartupMessages(library("singer"))
 suppressPackageStartupMessages(library("scales"))
 suppressPackageStartupMessages(library("ggalt"))
+suppressPackageStartupMessages(library("plotly"))
 ```
 
 ## Elaborating Gapminder Dataset
@@ -220,18 +221,44 @@ Great, still didn't lose the new ordering.
 
 # Part 3: Visualization Design
 
-Let's bring together what we've learned about `scales`, theming and coloring in `ggplot`, and some extra aesthetics I found [online](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html#Scatterplot%20With%20Encircling).
+Let's bring together what we've learned about `scales`, theming and coloring in `ggplot2`, and some extra aesthetics I found [online](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html#Scatterplot%20With%20Encircling).
 
-```{r}
-gapminder %>%
+```{r pretty plot}
+prettyPlot <- gapminder %>%
   filter(year == 2002) %>%
   select(continent, pop, gdpPercap) %>%
   ggplot(aes(y = pop, x = gdpPercap, colour=continent)) +
   geom_point() +
-  geom_encircle(size = 2, expand = 0.01) + 
+  geom_encircle(aes(fill = continent), alpha = 0.1, size = 2, expand = 0.01) + 
+  guides(fill = FALSE) + 
   scale_y_log10() +
   scale_x_log10() +
-  theme_light() +
-  labs(x = "GDP Per Capita", y = "Population", title = "GDP Per Capita vs. Population")
-``
+  theme_minimal() +
+  labs(x = "GDP Per Capita", y = "Population", title = "GDP Per Capita vs. Population", colour = "Continent") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+prettyPlot
+```
+
+Now render it as a Plotly graph.
+
+```{r plotly graph code, eval = FALSE}
+prettyPlot %>%
+  ggplotly() %>%
+  htmlwidgets::saveWidget("prettyPlot.html")
+```
+
+```{r plotly graph, include = FALSE}
+# I didn't want all of the ugly error messages printing to the output file and couldn't find a way to suppress it,
+# so I have one code chunk to show the code and one to run it. Not the best but gets the job done.
+prettyPlot %>%
+  ggplotly() %>%
+  htmlwidgets::saveWidget("prettyPlot.html")
+```
+
+[You can view the plot here](prettyPlot.html). Unfortunately `geom_encircle()` hasn't been implemented in plotly but we still get a pretty good looking graph with the interactivity that you don't get from `ggplot2` alone. 
+
+# Part 4: Writing Figures to File
+
+
 

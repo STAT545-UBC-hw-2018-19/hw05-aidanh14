@@ -9,6 +9,7 @@ October 17, 2018
     -   [Elaborating Singer Dataset](#elaborating-singer-dataset)
 -   [Part 2: File I/O](#part-2-file-io)
 -   [Part 3: Visualization Design](#part-3-visualization-design)
+-   [Part 4: Writing Figures to File](#part-4-writing-figures-to-file)
 
 Overview
 ========
@@ -35,6 +36,8 @@ suppressPackageStartupMessages(library("gapminder"))
 suppressPackageStartupMessages(library("tidyverse"))
 suppressPackageStartupMessages(library("singer"))
 suppressPackageStartupMessages(library("scales"))
+suppressPackageStartupMessages(library("ggalt"))
+suppressPackageStartupMessages(library("plotly"))
 ```
 
 Elaborating Gapminder Dataset
@@ -298,16 +301,50 @@ tibble("Before I/O" = beforeIO, "After I/O" = afterIO) %>%
   knitr::kable()
 ```
 
-| Before I/O     | After I/O      |
-|:---------------|:---------------|
-| Brother Beyond | Brother Beyond |
-| Ky-Mani Marley | Ky-Mani Marley |
-| Finntroll      | Finntroll      |
-| Lucky Soul     | Lucky Soul     |
-| Raimundos      | Raimundos      |
-| Kino Oko       | Kino Oko       |
+| Before I/O                    | After I/O                     |
+|:------------------------------|:------------------------------|
+| Snow Patrol                   | Snow Patrol                   |
+| Roger Clyne & The Peacemakers | Roger Clyne & The Peacemakers |
+| Robert Pete Williams          | Robert Pete Williams          |
+| Peter Cincotti                | Peter Cincotti                |
+| Rev. Gary Davis               | Rev. Gary Davis               |
+| Love & Money                  | Love & Money                  |
 
 Great, still didn't lose the new ordering.
 
 Part 3: Visualization Design
 ============================
+
+Let's bring together what we've learned about `scales`, theming and coloring in `ggplot2`, and some extra aesthetics I found [online](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html#Scatterplot%20With%20Encircling).
+
+``` r
+prettyPlot <- gapminder %>%
+  filter(year == 2002) %>%
+  select(continent, pop, gdpPercap) %>%
+  ggplot(aes(y = pop, x = gdpPercap, colour=continent)) +
+  geom_point() +
+  geom_encircle(aes(fill = continent), alpha = 0.1, size = 2, expand = 0.01) + 
+  guides(fill = FALSE) + 
+  scale_y_log10() +
+  scale_x_log10() +
+  theme_minimal() +
+  labs(x = "GDP Per Capita", y = "Population", title = "GDP Per Capita vs. Population", colour = "Continent") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+prettyPlot
+```
+
+![](hw05-aidanh14_files/figure-markdown_github/pretty%20plot-1.png)
+
+Now render it as a Plotly graph.
+
+``` r
+prettyPlot %>%
+  ggplotly() %>%
+  htmlwidgets::saveWidget("prettyPlot.html")
+```
+
+[You can view the plot here](prettyPlot.html). Unfortunately `geom_encircle()` hasn't been implemented in plotly but we still get a pretty good looking graph with the interactivity that you don't get from `ggplot2` alone.
+
+Part 4: Writing Figures to File
+===============================
