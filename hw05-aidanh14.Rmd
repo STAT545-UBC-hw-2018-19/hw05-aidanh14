@@ -121,17 +121,17 @@ singerFactorYear1 <- singer_locations %>%
 
 # Using the forcats function
 singerFactorYear2 <- singer_locations %>%
-  mutate(year = factor(year))
+  mutate(year = as_factor(as.character(year)))
 
 tibble("as.factor()" = singerFactorYear1$year,
-       "factor()" = singerFactorYear2$year) %>%
+       "as_factor()" = singerFactorYear2$year) %>%
   head() %>%
   knitr::kable()
 
 ```
 
 
-In this case, the output of the base R factor function and the forcats function are the same, but its alway's good to check in case of surprises.
+The forcats `as_factor()` function is more strict than the base r `as.factor` function, so we need to coerce the integer years to characters before coercing them to a factor. the order of both functions are the same in this case, but its alway's good to check for surprises.
 
 Now we can move onto dropping the "0" years.
 
@@ -150,14 +150,71 @@ Remembering from before, we originally had 10100 entries in the `singer_location
 Now, let's try rearranging `artist_name` to show which songs had the highest "hotness" score.
 
 ```{r}
-singer_locations %>%
-  mutate(artist_name = factor(artist_name)) %>%
-  mutate(artist_name = fct_reorder(artist_name, artist_hotttnesss, .fun = max)) %>%
-  select(artist_name, artist_hotttnesss, year) %>%
+# Before reorder
+artistsFactors <- singer_locations %>%
+  mutate(artist_name = as_factor(artist_name))
+
+notReordered<- artistsFactors$artist_name %>%
+  levels() %>%
+  head()
+
+# After reorder
+hottestArtists <- artistsFactors %>%
+  mutate(artist_name = fct_reorder(artist_name, artist_hotttnesss, .fun = max))
+
+reordered <- hottestArtists$artist_name %>%
+  levels() %>%
+  head()
+
+# Compare results
+tibble("Not Reordered" = notReordered, "Reordered By Hotness" = reordered) %>%
+  knitr::kable()
+```
+
+Good job, Freelance Hellraiser.
+
+# Part 2: File I/O
+
+Let's save the `hottestArtists` data we arranged to a CSV file and see if it's stil arranged after reading it again.
+
+```{r save to csv}
+hottestArtists$artist_name %>%
+  levels() %>%
+  write.csv("hottestArtists.csv")
+
+read.csv("hottestArtists.csv") %>%
   head() %>%
   knitr::kable()
 ```
 
-Good job, Motion City Sountrack.
+Success! We still have the artists ordered by hotness. We can experiment with the base r I/O functions as well.
 
-# Part 2: File I/O
+```{r base r I/O}
+# Mix them up just for fun
+shuffledArtists <- hottestArtists %>%
+  mutate(artist_name = fct_shuffle(artist_name))
+
+beforeIO <- shuffledArtists$artist_name %>%
+  levels() %>%
+  head()
+
+# Code copied from examples in readRDS documenation
+fil <- tempfile("shuffledArtists", fileext = ".rds")
+
+## save a single object to file
+saveRDS(shuffledArtists, fil)
+
+## restore it under a different name
+shuffledArtists2 <- readRDS(fil)
+
+afterIO <- shuffledArtists2$artist_name %>%
+  levels() %>%
+  head()
+
+tibble("Before I/O" = beforeIO, "After I/O" = afterIO) %>%
+  knitr::kable()
+```
+
+Great, still didn't lose the new ordering.
+
+# Part 3: Visualization Design

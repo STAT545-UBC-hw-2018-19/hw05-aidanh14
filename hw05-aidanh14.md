@@ -171,24 +171,24 @@ singerFactorYear1 <- singer_locations %>%
 
 # Using the forcats function
 singerFactorYear2 <- singer_locations %>%
-  mutate(year = factor(year))
+  mutate(year = as_factor(as.character(year)))
 
 tibble("as.factor()" = singerFactorYear1$year,
-       "factor()" = singerFactorYear2$year) %>%
+       "as_factor()" = singerFactorYear2$year) %>%
   head() %>%
   knitr::kable()
 ```
 
-| as.factor() | factor() |
-|:------------|:---------|
-| 2007        | 2007     |
-| 2004        | 2004     |
-| 1998        | 1998     |
-| 1995        | 1995     |
-| 1968        | 1968     |
-| 2006        | 2006     |
+| as.factor() | as\_factor() |
+|:------------|:-------------|
+| 2007        | 2007         |
+| 2004        | 2004         |
+| 1998        | 1998         |
+| 1995        | 1995         |
+| 1968        | 1968         |
+| 2006        | 2006         |
 
-In this case, the output of the base R factor function and the forcats function are the same, but its alway's good to check in case of surprises.
+The forcats `as_factor()` function is more strict than the base r `as.factor` function, so we need to coerce the integer years to characters before coercing them to a factor. the order of both functions are the same in this case, but its alway's good to check for surprises.
 
 Now we can move onto dropping the "0" years.
 
@@ -213,24 +213,95 @@ Remembering from before, we originally had 10100 entries in the `singer_location
 Now, let's try rearranging `artist_name` to show which songs had the highest "hotness" score.
 
 ``` r
-singer_locations %>%
-  mutate(artist_name = factor(artist_name)) %>%
-  mutate(artist_name = fct_reorder(artist_name, artist_hotttnesss, .fun = max)) %>%
-  select(artist_name, artist_hotttnesss, year) %>%
+# Before reorder
+artistsFactors <- singer_locations %>%
+  mutate(artist_name = as_factor(artist_name))
+
+notReordered<- artistsFactors$artist_name %>%
+  levels() %>%
+  head()
+
+# After reorder
+hottestArtists <- artistsFactors %>%
+  mutate(artist_name = fct_reorder(artist_name, artist_hotttnesss, .fun = max))
+
+reordered <- hottestArtists$artist_name %>%
+  levels() %>%
+  head()
+
+# Compare results
+tibble("Not Reordered" = notReordered, "Reordered By Hotness" = reordered) %>%
+  knitr::kable()
+```
+
+| Not Reordered                  | Reordered By Hotness                       |
+|:-------------------------------|:-------------------------------------------|
+| Motion City Soundtrack         | The Freelance Hellraiser                   |
+| Gene Chandler                  | Col. Bruce Hampton and the Late Bronze Age |
+| Paul Horn                      | The Jancee Pornick Casino                  |
+| Ronnie Earl & the Broadcasters | Elliott Sharp\`s Terraplane                |
+| Dorothy Ashby                  | Main Concept                               |
+| Barleyjuice                    | Jessie Lee Miller                          |
+
+Good job, Freelance Hellraiser.
+
+Part 2: File I/O
+================
+
+Let's save the `hottestArtists` data we arranged to a CSV file and see if it's stil arranged after reading it again.
+
+``` r
+hottestArtists$artist_name %>%
+  levels() %>%
+  write.csv("hottestArtists.csv")
+
+read.csv("hottestArtists.csv") %>%
   head() %>%
   knitr::kable()
 ```
 
-| artist\_name                   |  artist\_hotttnesss|  year|
-|:-------------------------------|-------------------:|-----:|
-| Motion City Soundtrack         |           0.6410183|  2007|
-| Gene Chandler                  |           0.3937627|  2004|
-| Paul Horn                      |           0.4306226|  1998|
-| Ronnie Earl & the Broadcasters |           0.3622792|  1995|
-| Dorothy Ashby                  |           0.4107520|  1968|
-| Barleyjuice                    |           0.3762635|  2006|
+|    X| x                                          |
+|----:|:-------------------------------------------|
+|    1| The Freelance Hellraiser                   |
+|    2| Col. Bruce Hampton and the Late Bronze Age |
+|    3| The Jancee Pornick Casino                  |
+|    4| Elliott Sharp\`s Terraplane                |
+|    5| Main Concept                               |
+|    6| Jessie Lee Miller                          |
 
-Good job, Motion City Sountrack.
+Success! We still have the artists ordered by hotness. We can experiment with the base r I/O functions as well.
 
-Part 2: File I/O
-================
+``` r
+# Mix them up just for fun
+shuffledArtists <- hottestArtists %>%
+  mutate(artist_name = fct_shuffle(artist_name))
+
+beforeIO <- shuffledArtists$artist_name %>%
+  levels() %>%
+  head()
+
+# Code copied from examples in readRDS documenation
+fil <- tempfile("shuffledArtists", fileext = ".rds")
+
+## save a single object to file
+saveRDS(shuffledArtists, fil)
+
+## restore it under a different name
+shuffledArtists2 <- readRDS(fil)
+
+afterIO <- shuffledArtists2$artist_name %>%
+  levels() %>%
+  head()
+
+tibble("Before I/O" = beforeIO, "After I/O" = afterIO) %>%
+  knitr::kable()
+```
+
+| Before I/O   | After I/O    |
+|:-------------|:-------------|
+| Zap Pow      | Zap Pow      |
+| Silmarils    | Silmarils    |
+| Hatiras      | Hatiras      |
+| Heidi Montag | Heidi Montag |
+| Astream      | Astream      |
+| Dokken       | Dokken       |
