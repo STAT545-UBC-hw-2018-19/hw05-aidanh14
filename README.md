@@ -2,9 +2,9 @@
 
 Here are the main files:
 
-- The RMarkdown file can be found here [link].
+- The output file can be found (here)[https://github.com/STAT545-UBC-students/hw05-aidanh14/blob/master/hw05-aidanh14.md].
 
-- The output Markdown file can be found here [link].
+- The RMarkdown file can be found (here)[https://github.com/STAT545-UBC-students/hw05-aidanh14/blob/master/hw05-aidanh14.Rmd].
 
 
 
