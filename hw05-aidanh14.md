@@ -301,14 +301,14 @@ tibble("Before I/O" = beforeIO, "After I/O" = afterIO) %>%
   knitr::kable()
 ```
 
-| Before I/O                    | After I/O                     |
-|:------------------------------|:------------------------------|
-| Snow Patrol                   | Snow Patrol                   |
-| Roger Clyne & The Peacemakers | Roger Clyne & The Peacemakers |
-| Robert Pete Williams          | Robert Pete Williams          |
-| Peter Cincotti                | Peter Cincotti                |
-| Rev. Gary Davis               | Rev. Gary Davis               |
-| Love & Money                  | Love & Money                  |
+| Before I/O                                                                  | After I/O                                                                   |
+|:----------------------------------------------------------------------------|:----------------------------------------------------------------------------|
+| Robert Wyatt                                                                | Robert Wyatt                                                                |
+| Atlantic Starr                                                              | Atlantic Starr                                                              |
+| Enrico Rava\_ Stefano Bollani\_ Mark Turner\_ Larry Grenadier\_ Paul Motian | Enrico Rava\_ Stefano Bollani\_ Mark Turner\_ Larry Grenadier\_ Paul Motian |
+| Inner City Unit                                                             | Inner City Unit                                                             |
+| Too Pure To Die                                                             | Too Pure To Die                                                             |
+| Brian Melo                                                                  | Brian Melo                                                                  |
 
 Great, still didn't lose the new ordering.
 
@@ -325,8 +325,8 @@ prettyPlot <- gapminder %>%
   geom_point() +
   geom_encircle(aes(fill = continent), alpha = 0.1, size = 2, expand = 0.01) + 
   guides(fill = FALSE) + 
-  scale_y_log10() +
-  scale_x_log10() +
+  scale_y_log10(labels = comma_format()) +
+  scale_x_log10(labels = dollar_format()) +
   theme_minimal() +
   labs(x = "GDP Per Capita", y = "Population", title = "GDP Per Capita vs. Population", colour = "Continent") +
   theme(plot.title = element_text(hjust = 0.5))
@@ -344,7 +344,27 @@ prettyPlot %>%
   htmlwidgets::saveWidget("prettyPlot.html")
 ```
 
-[You can view the plot here](prettyPlot.html). Unfortunately `geom_encircle()` hasn't been implemented in plotly but we still get a pretty good looking graph with the interactivity that you don't get from `ggplot2` alone.
+[You can download the plot in HTML here](prettyPlot.html). Unfortunately `geom_encircle()` hasn't been implemented in plotly but we still get a good looking graph with the interactivity that you don't get from `ggplot2` alone.
 
 Part 4: Writing Figures to File
 ===============================
+
+Let's save that last plot to file.
+
+``` r
+ggsave("prettyPlot.png", plot = prettyPlot)
+```
+
+    ## Saving 7 x 5 in image
+
+Note that I needed to explicitly `plot = prettyPlot` here, because the last plot was the HTML plotly file, which the `ggsave()` function can't handle. Here it is as a .png:
+
+![prettyPlot1](prettyPlot.png)
+
+We can of course set the width and height, as atrocious as you wish.
+
+``` r
+ggsave("prettyPlot2.png", plot = prettyPlot, width = 3, height = 5, dpi = 100)
+```
+
+![prettyPlot2](prettyPlot2.png)
